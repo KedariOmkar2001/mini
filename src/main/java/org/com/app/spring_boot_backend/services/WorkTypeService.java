@@ -1,83 +1,76 @@
 package org.com.app.spring_boot_backend.services;
 
-import org.com.app.spring_boot_backend.dtos.works.WorkType.WorkTypeRequestDTO;
-import org.com.app.spring_boot_backend.dtos.works.WorkType.WorkTypeResponseDTO;
+import org.com.app.spring_boot_backend.dtos.works.WorkType.WorkTypeDTO;
 import org.com.app.spring_boot_backend.entities.works.WorkType;
 import org.com.app.spring_boot_backend.repositories.WorkTypeRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@Transactional
 public class WorkTypeService {
 
-    // dependencies
-    private final WorkTypeRepository workTypeRepository;
+    @Autowired
+    private WorkTypeRepository workTypeRepository;
 
-    // constructor injection
-    public WorkTypeService(WorkTypeRepository workTypeRepository) {
-        this.workTypeRepository = workTypeRepository;
+    // Create
+    public WorkTypeDTO createWorkType(WorkTypeDTO dto) {
+        WorkType workType = new WorkType();
+        workType.setWorkType(dto.getWorkType());
+        workType.setWorkTypeCode(dto.getWorkTypeCode());
+        workType.setIsImportant(dto.getIsImportant());
+
+        WorkType savedWorkType = workTypeRepository.save(workType);
+        return convertToDTO(savedWorkType);
     }
 
-
-    // Convert Entity → Response DTO
-    private WorkTypeResponseDTO toDTO(WorkType entity) {
-        WorkTypeResponseDTO dto = new WorkTypeResponseDTO();
-        dto.setWorkTypeId(entity.getWorkTypeId());
-        dto.setWorkType(entity.getWorkType());
-        dto.setWorkTypeCode(entity.getWorkTypeCode());
-        dto.setIsImportant(entity.getIsImportant());
-        return dto;
-    }
-
-    // Convert Request DTO → Entity
-    private WorkType toEntity(WorkTypeRequestDTO dto) {
-        WorkType entity = new WorkType();
-        entity.setWorkType(dto.getWorkType());
-        entity.setWorkTypeCode(dto.getWorkTypeCode());
-        entity.setIsImportant(dto.getIsImportant());
-        return entity;
-    }
-
-
-    // crud methods
-
-    public List<WorkTypeResponseDTO> findAll() {
+    // Read All
+    public List<WorkTypeDTO> getAllWorkTypes() {
         return workTypeRepository.findAll()
                 .stream()
-                .map(this::toDTO)
+                .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
 
-    public WorkTypeResponseDTO findById(int id) {
-        return workTypeRepository.findById(id)
-                .map(this::toDTO)
-                .orElseThrow(() -> new RuntimeException("WorkType not found"));
+    // Read by ID
+    public WorkTypeDTO getWorkTypeById(Integer id) {
+        WorkType workType = workTypeRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("WorkType not found with id: " + id));
+        return convertToDTO(workType);
     }
 
-    public WorkTypeResponseDTO save(WorkTypeRequestDTO dto) {
-        WorkType entity = toEntity(dto);
-        WorkType saved = workTypeRepository.save(entity);
-        return toDTO(saved);
+    // Update
+    public WorkTypeDTO updateWorkType(Integer id, WorkTypeDTO dto) {
+        WorkType workType = workTypeRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("WorkType not found with id: " + id));
+
+        workType.setWorkType(dto.getWorkType());
+        workType.setWorkTypeCode(dto.getWorkTypeCode());
+        workType.setIsImportant(dto.getIsImportant());
+
+        WorkType updatedWorkType = workTypeRepository.save(workType);
+        return convertToDTO(updatedWorkType);
     }
 
-    public WorkTypeResponseDTO update(int id, WorkTypeRequestDTO dto) {
-        WorkType entity = workTypeRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("WorkType not found"));
-
-        entity.setWorkType(dto.getWorkType());
-        entity.setWorkTypeCode(dto.getWorkTypeCode());
-        entity.setIsImportant(dto.getIsImportant());
-
-        WorkType updated = workTypeRepository.save(entity);
-        return toDTO(updated);
-    }
-
-    public void delete(int id) {
+    // Delete
+    public void deleteWorkType(Integer id) {
         if (!workTypeRepository.existsById(id)) {
-            throw new RuntimeException("WorkType not found");
+            throw new RuntimeException("WorkType not found with id: " + id);
         }
         workTypeRepository.deleteById(id);
+    }
+
+    // Convert Entity to DTO
+    private WorkTypeDTO convertToDTO(WorkType workType) {
+        return new WorkTypeDTO(
+                workType.getWorkTypeId(),
+                workType.getWorkType(),
+                workType.getWorkTypeCode(),
+                workType.getIsImportant()
+        );
     }
 }
