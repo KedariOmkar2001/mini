@@ -14,8 +14,10 @@ import java.util.List;
 @CrossOrigin(origins = "http://localhost:4200")
 public class WorkSubTypeController {
 
-    @Autowired
     private WorkSubTypeService workSubTypeService;
+    public WorkSubTypeController(WorkSubTypeService workSubTypeService){
+        this.workSubTypeService=workSubTypeService;
+    }
 
     // create
     @PostMapping
