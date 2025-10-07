@@ -14,8 +14,10 @@ import java.util.stream.Collectors;
 @Transactional
 public class WorkTypeService {
 
-    @Autowired
     private WorkTypeRepository workTypeRepository;
+    public WorkTypeService(WorkTypeRepository workTypeRepository){
+        this.workTypeRepository = workTypeRepository;
+    }
 
     // Create
     public WorkTypeDTO createWorkType(WorkTypeDTO dto) {
