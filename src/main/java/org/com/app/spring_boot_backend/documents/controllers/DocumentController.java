@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/documents")
+@RequestMapping(value = "/api/documents", produces = "application/json")
 @CrossOrigin(origins = "*")
 public class DocumentController {
 
@@ -25,6 +25,7 @@ public class DocumentController {
         return documentService.getAllDocuments();
     }
 
+
     @GetMapping("/{folder}/{fileName:.+}")
     public ResponseEntity<Resource> downloadDocument(
             @PathVariable String folder,
@@ -34,10 +35,12 @@ public class DocumentController {
         String contentType = Files.probeContentType(resource.getFile().toPath());
         if (contentType == null) contentType = "application/octet-stream";
 
+        // returns a force download
+
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType(contentType))
                 .header(HttpHeaders.CONTENT_DISPOSITION,
-                        "inline; filename=\"" + resource.getFilename() + "\"")
+                        "attachment; filename=\"" + resource.getFilename() + "\"")
                 .body(resource);
     }
 }
